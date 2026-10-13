@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Happy Wheels</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <style>
+        body {
+            overflow: hidden;
+            background-color: #3d88c7;
+            margin: 0;
+        }
+    </style>
+</head>
+<script src="js/redirectLevels.js"></script>
+<body oncontextmenu="return false;">
+
+    <script>
+    (function () {
+        debugger;
+        function getTitleLabel() {
+            const labels = [
+              "JS Edition",
+              "Cracked by dweh224d",
+              "HTML5 Edition",
+              "Cracked by dweh224d",
+              "Flashless Version",
+              "RIP Flash Edition",
+              "Cracked by dweh224d",
+              "Flash Is Dead!",
+              "Farewell Flash...",
+              "Without that plugin",
+              "Does Jim know I put this here?",
+              "Cracked by dweh224d",
+              "Cracked by dweh224d",
+              "Cracked by dweh224d",
+              "Cracked by dweh224d",
+            ]
+
+            return labels[Math.floor(Math.random() * labels.length)];
+        }
+
+        function getLatestHWVersion() {
+            return fetch("version.json")
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error(
+                            "Version request failed: HTTP " + response.status
+                        );
+                    }
+                    return response.json();
+                });
+        }
+
+        window.HW_SETTINGS = {
+            siteURL: "totaljerkface.com",
+            pathPrefix: "",
+            titleLabel: getTitleLabel(),
+            titleLabelX: 645,
+            titleLabelY: 250,
+            titleLabelRotation: 0,
+            titleLabelSize: 20,
+            titleLabelColor: 0xfdfd65,
+            resolutionZoomIncreaseRatio: 0.5,
+            tesselation: "tess2"
+        };
+
+        // Read parameters from this page, avoiding cross-origin parent access.
+        const urlParams = new URLSearchParams(window.location.search);
+        const replayId = urlParams.get("replay_id");
+        const levelId = urlParams.get("level_id");
+
+        if (replayId !== null && replayId.trim() !== "" && !isNaN(replayId)) {
+            window.HW_SETTINGS.replay_id = replayId;
+        }
+
+        if (levelId !== null && levelId.trim() !== "" && !isNaN(levelId)) {
+            window.HW_SETTINGS.level_id = levelId;
+        }
+
+        // Credits
+        fetch("js/credits.txt")
+            .then(r => r.text())
+            .then(text => console.log(text));
+
+
+        function loadDependency(name, hash) {
+            return new Promise(function (resolve, reject) {
+                const script = document.createElement("script");
+                script.src = "./js/" + name + "." + hash + ".js";
+                script.onload = resolve;
+                script.onerror = function () {
+                    reject(new Error("Failed to load script: " + script.src));
+                };
+                document.body.appendChild(script);
+            });
+        }
+
+        getLatestHWVersion()
+            .then(function (latest) {
+                if (!latest || !latest.dependencies || !latest.index) {
+                    throw new Error(
+                        "version.json must contain dependencies and index hashes."
+                    );
+                }
+
+                return Promise.all([
+                    loadDependency("dependencies", latest.dependencies),
+                    loadDependency("index", latest.index)
+                ]);
+            })
+            .catch(function (error) {
+                console.error("Happy Wheels loading failed:", error);
+            });
+    })();
+    </script>
+
+    <div id="og-game-holder"></div>
+
+</body>
+</html>
